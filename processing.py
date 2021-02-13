@@ -13,7 +13,7 @@ import pickle
 import pycountry_convert as pc
 
 SUSPECTED_TRANSACTION_VALUE = 100000
-Recipients = ['kushagra.tandon@zohomail.eu' , 'kushagra.25@zohomail.eu']
+Recipients = ['kushagra.tandon@zohomail.eu']
 
 
 def country_to_continent(country_name):
