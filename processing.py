@@ -18,9 +18,12 @@ Recipients = ['kushagra.tandon@zohomail.eu']
 
 def country_to_continent(country_name):
     country_alpha2 = pc.country_name_to_country_alpha2(country_name)
-    country_continent_code = pc.country_alpha2_to_continent_code(country_alpha2)
-    country_continent_name = pc.convert_continent_code_to_continent_name(country_continent_code)
+    country_continent_code = pc.country_alpha2_to_continent_code(
+        country_alpha2)
+    country_continent_name = pc.convert_continent_code_to_continent_name(
+        country_continent_code)
     return country_continent_name
+
 
 def process(json):
     data = pd.json_normalize(json)
@@ -33,8 +36,8 @@ def process(json):
     data_cleaned = data.drop(
         ['nameOrig', 'nameDest', 'OrigCountry', 'DestCountry'], axis=1)
     data_cleaned = pd.get_dummies(data_cleaned)
-    #THE MODEL FILE NAME IS TM_Model_Kushagra FOR DUMMY-DATA
-    ##Continent Generation
+    # THE MODEL FILE NAME IS TM_Model_Kushagra FOR DUMMY-DATA
+    # Continent Generation
 
     source_countries = data['OrigCountry']
     source_countries = source_countries.array
@@ -45,7 +48,7 @@ def process(json):
     # convert country to continent
     for country in source_countries:
         country = country.title()
-        data_country= country_to_continent(country)
+        data_country = country_to_continent(country)
         map_continent.append(data_country)
 
     map_continent = list(pd.Series(map_continent))
@@ -55,14 +58,14 @@ def process(json):
     filename = 'data/TM_Model_Kushagra.h5'
     loaded_model = pickle.load(open(filename, 'rb'))
     y_pred = loaded_model.predict(data_cleaned)
-    #MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
+    # MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
     y_predicted = list(y_pred)
     data['isFraud'] = y_predicted
-    #RED FLAGGING THE PREDICECTED SYSTEM
+    # RED FLAGGING THE PREDICECTED SYSTEM
     df_red = data[data['isFraud'] == 1]
     df_red = df_red.drop('isFraud', axis=1)
     df_red['Flag'] = 'red'
-    #CHECKING FOR THE ORANGE AND GREEN FLAG
+    # CHECKING FOR THE ORANGE AND GREEN FLAG
     df2 = pd.DataFrame(pd.read_excel('data/Contries_score.xlsx'))
     df2 = df2.rename(columns={'Overall score': 'score'})
     df2 = df2[df2['score'] >= 6]
@@ -86,21 +89,19 @@ def process(json):
     green = pd.DataFrame(green_flag.items(), columns=['nameOrig', 'Flag'])
     df_orange = data.merge(orange, how="inner")
     df_green = data.merge(green, how="inner")
-    # print(df_orange)
-    # print(df_green)
-    # print(df_red)
     send = [df_red, df_orange, df_green]
     result = pd.concat(send).to_json(orient='records')
     print(result)
     # Email Notification System
-    email_sys(df_red,df_orange)
+    email_sys(df_red, df_orange)
     return result
 
+
 def process2(json):
-    data=pd.DataFrame(json)
+    data = pd.DataFrame(json)
     data_cleaned = data.drop(
-        ['nameOrig', 'nameDest', 'OrigCountry', 'DestCountry','type'], axis=1)
-    ##Continent Generation
+        ['nameOrig', 'nameDest', 'OrigCountry', 'DestCountry', 'type'], axis=1)
+    # Continent Generation
 
     source_countries = data['OrigCountry']
     source_countries = source_countries.array
@@ -111,37 +112,37 @@ def process2(json):
     # convert country to continent
     for country in source_countries:
         country = country.title()
-        data_country= country_to_continent(country)
+        data_country = country_to_continent(country)
         map_continent.append(data_country)
 
     map_continent = list(pd.Series(map_continent))
     print(type(data))
     data['OrigContinent'] = map_continent
     ####################
-    #THE MODEL FILE NAME IS TM_Model_Kushagra FOR DUMMY-DATA 
+    # THE MODEL FILE NAME IS TM_Model_Kushagra FOR DUMMY-DATA
     filename = 'data/TM_Model_Kushagra2.h5'
     loaded_model = pickle.load(open(filename, 'rb'))
     y_pred = loaded_model.predict(data_cleaned)
-    #MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
+    # MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
     y_predicted = list(y_pred)
     data['isFraud'] = y_predicted
-    #RED FLAGGING THE PREDICECTED SYSTEM
+    # RED FLAGGING THE PREDICECTED SYSTEM
     df_red = data[data['isFraud'] == 1]
     df_red = df_red.drop('isFraud', axis=1)
     df_red['Flag'] = 'red'
-    #CHECKING FOR THE ORANGE AND GREEN FLAG
+    # CHECKING FOR THE ORANGE AND GREEN FLAG
     df2 = pd.DataFrame(pd.read_excel('data/Contries_score.xlsx'))
     df2 = df2.rename(columns={'Overall score': 'score'})
     df2 = df2[df2['score'] >= 6]
     country_score = pd.Series(df2.score.values, index=df2.Country).to_dict()
 
     data = data[data['isFraud'] == 0]
-    data=data.drop('isFraud', axis=1)
+    data = data.drop('isFraud', axis=1)
     orange_flag = {}
     green_flag = {}
     for i in data.index:
         if data['OrigCountry'][i] in country_score.keys() or data['DestCountry'][i] in country_score.keys():
-            if (( float(data['amount'][i]) > SUSPECTED_TRANSACTION_VALUE)):
+            if ((float(data['amount'][i]) > SUSPECTED_TRANSACTION_VALUE)):
                 orange_flag.update({data['nameOrig'][i]: 'orange'})
             else:
                 green_flag.update({data['nameOrig'][i]: 'green'})
@@ -157,24 +158,26 @@ def process2(json):
     send = [df_red, df_orange, df_green]
     result = pd.concat(send).to_json(orient='records')
     print(result)
-    email_sys(df_orange,df_red)
+    email_sys(df_orange, df_red)
     return result
 
-#Email Notification System
+# Email Notification System
+
+
 def recipients(recipient):
     data = pd.json_normalize(recipient)
     data = pd.DataFrame(data)
     data = data['email'].tolist()
-    data=np.array(data)
+    data = np.array(data)
     data = data.flatten()
-    # print(data)
     # ##HERE RES HAS BECOME AN ARRAY ['kushagra.tandon.124@gmail.com' 'samarth.tandon91@gmail.com']
     for i in data:
         Recipients.append(i)
     print(Recipients)
     return
 
-def email_sys(df_orange,df_red):
+
+def email_sys(df_orange, df_red):
     orange_file = StringIO()
     orange_file.write(df_orange.to_csv())
     orange_file.seek(0)
@@ -214,7 +217,8 @@ def email_sys(df_orange,df_red):
     payload2 = MIMEBase('application', 'octate-stream')
     payload2.set_payload(orange_file.read())
     encoders.encode_base64(payload2)
-    payload2.add_header('Content-Decomposition', 'orange', filename='orange.txt')
+    payload2.add_header('Content-Decomposition',
+                        'orange', filename='orange.txt')
     message.attach(payload2)
 
     fp = open('data/fraud.jpg', 'rb')
