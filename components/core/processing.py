@@ -45,7 +45,7 @@ def process(json):
     print(type(data))
     data['OrigContinent'] = map_continent
     ####################
-    filename = 'data/TM_Model_Kushagra.h5'
+    filename = 'components/model/TM_Model_Kushagra.h5'
     loaded_model = pickle.load(open(filename, 'rb'))
     y_pred = loaded_model.predict(data_cleaned)
     # MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
@@ -56,7 +56,7 @@ def process(json):
     df_red = df_red.drop('isFraud', axis=1)
     df_red['Flag'] = 'red'
     # CHECKING FOR THE ORANGE AND GREEN FLAG
-    df2 = pd.DataFrame(pd.read_excel('data/Contries_score.xlsx'))
+    df2 = pd.DataFrame(pd.read_excel('/components/model/Contries_score.xlsx'))
     df2 = df2.rename(columns={'Overall score': 'score'})
     df2 = df2[df2['score'] >= 6]
     country_score = pd.Series(df2.score.values, index=df2.Country).to_dict()
@@ -110,7 +110,7 @@ def process2(json):
     data['OrigContinent'] = map_continent
     ####################
     # THE MODEL FILE NAME IS TM_Model_Kushagra FOR DUMMY-DATA
-    filename = 'data/TM_Model_Kushagra2.h5'
+    filename = 'components/model/TM_Model_Kushagra2.h5'
     loaded_model = pickle.load(open(filename, 'rb'))
     y_pred = loaded_model.predict(data_cleaned)
     # MODEL PREDICTIONS DONE ABOVE AND NOW ADDING THE PREDICECTED Data TO THE DUMMY DATASET FOR WORK
@@ -121,7 +121,7 @@ def process2(json):
     df_red = df_red.drop('isFraud', axis=1)
     df_red['Flag'] = 'red'
     # CHECKING FOR THE ORANGE AND GREEN FLAG
-    df2 = pd.DataFrame(pd.read_excel('data/Contries_score.xlsx'))
+    df2 = pd.DataFrame(pd.read_excel('/components/model/Contries_score.xlsx'))
     df2 = df2.rename(columns={'Overall score': 'score'})
     df2 = df2[df2['score'] >= 6]
     country_score = pd.Series(df2.score.values, index=df2.Country).to_dict()
