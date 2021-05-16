@@ -1,16 +1,13 @@
-from processing import process, process2, recipients
+from components.core import process, process2
+from components.utils import recipients
 import json
-from functools import wraps
-from flask import Flask, request, make_response
-from flask_cors import CORS, cross_origin
+from flask import Flask, request
 
 app = Flask(__name__)
-cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 @app.route('/', methods=['GET', 'POST'])
-@cross_origin()
 def predict():
     if request.method == 'GET':
         return 'Send a POST request here'
